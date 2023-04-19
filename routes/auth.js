@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../schemas/user");
+const { Users } = require("../models");
 const jwt = require("jsonwebtoken");
 
 router.post("/signup", async (req, res) => {
@@ -28,13 +28,12 @@ router.post("/signup", async (req, res) => {
         .status(412)
         .json({ errorMessage: "패스워드에 닉네임이 포함되어 있습니다." });
     }
-    const isExistUser = await User.findOne({ nickname }).exec();
+    const isExistUser = await Users.findOne({ where: { nickname: nickname } });
     if (isExistUser) {
       return res.status(412).json({ errorMessage: "중복된 닉네임입니다." });
     }
 
-    const user = new User({ nickname, password });
-    await user.save();
+    await Users.create({ nickname, password });
     return res.status(201).json({ message: "회원 가입에 성공하였습니다." });
   } catch (error) {
     console.log(error.message);
@@ -46,9 +45,9 @@ router.post("/signup", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   const { nickname, password } = req.body;
-  const user = await User.findOne({ nickname }).exec();
+  const user = await Users.findOne({ where: { nickname: nickname } });
 
-  if (user === null || user.password !== password) {
+  if (!user || user.password !== password) {
     return res
       .status(412)
       .json({ errorMessage: "닉네임 또는 패스워드를 확인해주세요." });

@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const User = require("../schemas/user");
+const { Users } = require("../models");
 
 module.exports = async (req, res, next) => {
   const { Authorization } = req.cookies;
@@ -13,7 +13,7 @@ module.exports = async (req, res, next) => {
 
   try {
     const { nickname } = jwt.verify(authToken, "awb231aswq211");
-    const user = await User.findOne({ nickname });
+    const user = await Users.findOne({ where: { nickname } });
     res.locals.user = user;
     next();
   } catch (error) {
