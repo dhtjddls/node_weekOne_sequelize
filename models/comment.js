@@ -1,7 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class Posts extends Model {
+  class Comment extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -14,26 +14,21 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "UserId",
       });
 
-      // define association here
       this.belongsTo(models.Users, {
         targetKey: "nickname",
         foreignKey: "nickName",
       });
 
-      this.hasMany(models.Comment, {
-        sourceKey: "postId",
-        foreignKey: "PostId",
-      });
-
-      this.hasMany(models.Like, {
-        sourceKey: "postId",
+      // define association here
+      this.belongsTo(models.Posts, {
+        targetKey: "postId",
         foreignKey: "PostId",
       });
     }
   }
-  Posts.init(
+  Comment.init(
     {
-      postId: {
+      commentId: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
@@ -48,15 +43,25 @@ module.exports = (sequelize, DataTypes) => {
         },
         onDelete: "CASCADE", // 만약 Users 모델의 userId가 삭제되면, Posts 모델의 데이터가 삭제됩니다.
       },
-      title: {
+      PostId: {
         allowNull: false,
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
+        references: {
+          model: "Posts",
+          key: "postId",
+        },
+        onDelete: "CASCADE",
       },
-      content: {
-        allowNull: false,
+      nickName: {
+        allowNull: false, // NOT NULL
         type: DataTypes.STRING,
+        references: {
+          model: "Users", // Users 모델을 참조합니다.
+          key: "nickname", // Users 모델의 userId를 참조합니다.
+        },
+        onDelete: "CASCADE", // 만약 Users 모델의 userId가 삭제되면, Posts 모델의 데이터가 삭제됩니다.
       },
-      nickname: {
+      comment: {
         allowNull: false,
         type: DataTypes.STRING,
       },
@@ -71,8 +76,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: "Posts",
+      modelName: "Comment",
     }
   );
-  return Posts;
+  return Comment;
 };

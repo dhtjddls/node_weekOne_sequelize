@@ -4,7 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prestart": "node ./utils/swagger.js"
   },
   "author": "",
   "license": "ISC",
@@ -13,7 +14,9 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
     "mysql2": "^3.2.3",
-    "sequelize": "^6.31.0"
+    "sequelize": "^6.31.0",
+    "swagger-autogen": "^2.23.1",
+    "swagger-ui-express": "^4.6.2"
   },
   "devDependencies": {
     "sequelize-cli": "^6.6.0"
