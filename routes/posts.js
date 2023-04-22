@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Posts } = require("../models");
+const { Posts, Like } = require("../models");
 const authMiddleware = require("../middlewares/auth-middleware");
 const { Op } = require("sequelize");
 const { tryCatch } = require("../utils/tryCatch");
@@ -49,6 +49,7 @@ router.get(
         "title",
         "createdAt",
         "updatedAt",
+        "likes",
       ],
       order: [["createdAt", "DESC"]],
     });
@@ -59,6 +60,7 @@ router.get(
           userId: a.UserId,
           nickname: a.nickname,
           title: a.title,
+          likes: a.likes,
           createdAt: a.createdAt,
           updatedAt: a.updatedAt,
         };
@@ -72,6 +74,8 @@ router.get(
 router.get(
   "/:_postId",
   tryCatch(async (req, res) => {
+    console.log("post");
+
     const { _postId } = req.params;
     const post = await Posts.findOne({
       attributes: [
@@ -80,6 +84,7 @@ router.get(
         "nickname",
         "title",
         "content",
+        "likes",
         "createdAt",
         "updatedAt",
       ],
@@ -93,6 +98,7 @@ router.get(
         nickname: post.nickname,
         title: post.title,
         content: post.content,
+        likes: post.likes,
         createdAt: post.createdAt,
         updatedAt: post.updatedAt,
       },
@@ -178,6 +184,44 @@ router.delete(
         .json({ errorMessage: "게시글이 정상적으로 삭제되지 않았습니다." })
     );
     return res.status(200).json({ message: "게시글을 삭제하였습니다." });
+  })
+);
+
+router.put(
+  "/:postId/like",
+  authMiddleware,
+  tryCatch(async (req, res) => {
+    const { postId } = req.params;
+    const { userId } = res.locals.user;
+    const isExistPost = await Posts.findOne({ where: { postId: postId } });
+    if (!isExistPost) {
+      return res
+        .status(404)
+        .json({ errorMessage: "게시글이 존재하지 않습니다." });
+    }
+
+    const isLikeExist = await Like.findOne({
+      where: {
+        [Op.and]: [{ postId: postId }, { UserId: userId }],
+      },
+    });
+
+    if (isLikeExist) {
+      await Like.destroy({
+        where: {
+          [Op.and]: [{ PostId: postId }, { UserId: userId }],
+        },
+      });
+      isExistPost.decrement("likes", { by: 1 });
+      res.status(200).json({ message: "게시글의 좋아요를 취소하였습니다." });
+    } else {
+      await Like.create({
+        PostId: postId,
+        UserId: userId,
+      });
+      isExistPost.increment("likes", { by: 1 });
+      res.status(200).json({ message: "게시글의 좋아요를 등록하였습니다." });
+    }
   })
 );
 

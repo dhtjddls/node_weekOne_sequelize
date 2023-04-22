@@ -4,7 +4,7 @@ const { Users } = require("../models");
 module.exports = async (req, res, next) => {
   const { Authorization } = req.cookies;
   const [authType, authToken] = (Authorization ?? "").split(" ");
-
+  console.log(authType, authToken);
   if (authType !== "Bearer" || !authToken) {
     return res.status(403).json({
       errorMessage: "로그인이 필요한 기능입니다.",

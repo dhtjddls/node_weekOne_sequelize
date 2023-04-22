@@ -1,16 +1,40 @@
 const express = require("express");
 const router = express.Router();
-const { Comment, Posts, Like } = require("../models/index");
+const { Posts } = require("../models/index");
 const authMiddleware = require("../middlewares/auth-middleware");
-const { Op } = require("sequelize");
 const { tryCatch } = require("../utils/tryCatch");
 
-router.put(
-  "/posts/:postId/like",
+router.get(
+  "/",
   authMiddleware,
   tryCatch(async (req, res) => {
-    const { postId } = req.params;
-    const { userId } = res.locals.user;
+    console.log("like");
+    const posts = await Posts.findAll({
+      attributes: [
+        "postId",
+        "UserId",
+        "nickname",
+        "title",
+        "createdAt",
+        "updatedAt",
+        "likes",
+      ],
+      order: [["likes", "DESC"]],
+    });
+    const data = {
+      posts: posts.map((a) => {
+        return {
+          postId: a.postId,
+          userId: a.UserId,
+          nickname: a.nickname,
+          title: a.title,
+          likes: a.likes,
+          createdAt: a.createdAt,
+          updatedAt: a.updatedAt,
+        };
+      }),
+    };
+    res.status(200).json(data);
   })
 );
 
