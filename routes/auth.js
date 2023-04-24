@@ -10,6 +10,8 @@ router.post(
     const { nickname, password, confirm } = req.body;
     // /^[A-Za-z0-9]{3,}$/
     const regexResult = /^[A-Za-z0-9]{3,}$/.test(nickname);
+    const passwordLength = 4;
+
     if (!regexResult) {
       return res
         .status(412)
@@ -20,7 +22,7 @@ router.post(
         errorMessage: "패스워드가 일치하지 않습니다.",
       });
     }
-    if (password.length < 4) {
+    if (password.length < passwordLength) {
       return res
         .status(412)
         .json({ errorMessage: "패스워드 형식이 일치하지 않습니다." });

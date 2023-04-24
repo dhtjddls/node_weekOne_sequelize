@@ -1,4 +1,5 @@
 const express = require("express");
+const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const app = express();
 const port = 3000;
@@ -9,6 +10,7 @@ const errorHandler = require("./middlewares/errorHandler");
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(morgan("dev"));
 
 // Swagger
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
