@@ -24,8 +24,8 @@ const likeRouter = require("./routes/like");
 
 // localhost:3000/ -> indexRouter
 app.use("/", [indexRouter, authRouter]);
-// localhost:3000/posts -> postsRouter, commentsRouter
 app.use("/posts/like", [likeRouter]);
+// localhost:3000/posts -> postsRouter, commentsRouter
 app.use("/posts", [postsRouter, commentRouter]);
 
 app.use(errorHandler);
