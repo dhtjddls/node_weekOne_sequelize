@@ -17,10 +17,10 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 // Router
 const indexRouter = require("./routes/index");
-const postsRouter = require("./routes/posts");
-const authRouter = require("./routes/auth");
-const commentRouter = require("./routes/comment");
-const likeRouter = require("./routes/like");
+const postsRouter = require("./routes/posts.routes");
+const authRouter = require("./routes/auth.routes");
+const commentRouter = require("./routes/comment.routes");
+const likeRouter = require("./routes/like.routes");
 
 // localhost:3000/ -> indexRouter
 app.use("/", [indexRouter, authRouter]);

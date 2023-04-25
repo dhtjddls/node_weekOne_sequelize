@@ -1,19 +1,16 @@
-const express = require("express");
-const router = express.Router();
-const { Users } = require("../models");
-const jwt = require("jsonwebtoken");
-const { tryCatch } = require("../utils/tryCatch");
+const AuthService = require("../services/auth.service");
+const PostService = require("../services/posts.service");
 const bcrypt = require("bcryptjs");
-const salt = bcrypt.genSaltSync(12);
+const { tryCatch } = require("../utils/tryCatch");
 
-router.post(
-  "/signup",
-  tryCatch(async (req, res) => {
+class AuthController {
+  authService = new AuthService();
+  postService = new PostService();
+
+  signup = tryCatch(async (req, res) => {
     const { nickname, password, confirm } = req.body;
-    // /^[A-Za-z0-9]{3,}$/
     const regexResult = /^[A-Za-z0-9]{3,}$/.test(nickname);
     const passwordLength = 4;
-
     if (!regexResult) {
       return res
         .status(412)
@@ -34,38 +31,33 @@ router.post(
         .status(412)
         .json({ errorMessage: "패스워드에 닉네임이 포함되어 있습니다." });
     }
-    const isExistUser = await Users.findOne({
-      where: { nickname: nickname },
-    });
+    const isExistUser = await this.authService.findOneUser(nickname);
     if (isExistUser) {
       return res.status(412).json({ errorMessage: "중복된 닉네임입니다." });
     }
-    await Users.create({
-      nickname,
-      password: await bcrypt.hash(password, salt),
-    });
-    return res.status(201).json({ message: "회원 가입에 성공하였습니다." });
-  })
-);
 
-router.post(
-  "/login",
-  tryCatch(async (req, res) => {
+    const signupData = await this.authService.signup(
+      nickname,
+      password,
+      confirm
+    );
+    res.status(200).json(signupData);
+  });
+
+  login = tryCatch(async (req, res) => {
     const { nickname, password } = req.body;
-    const user = await Users.findOne({ where: { nickname: nickname } });
+    const user = await this.authService.findOneUser(nickname);
 
     if (!user || !bcrypt.compareSync(password, user.password)) {
       return res
         .status(412)
         .json({ errorMessage: "닉네임 또는 패스워드를 확인해주세요." });
     }
+    const loginData = await this.authService.login(nickname);
 
-    const token = jwt.sign({ nickname: user.nickname }, "awb231aswq211", {
-      expiresIn: "1h",
-    });
-    res.cookie("Authorization", `Bearer ${token}`);
-    res.status(200).json({ Authorization: `Bearer ${token}` });
-  })
-);
+    res.cookie("Authorization", `${loginData.type} ${loginData.token}`);
+    res.status(200).json(loginData);
+  });
+}
 
-module.exports = router;
+module.exports = AuthController;
