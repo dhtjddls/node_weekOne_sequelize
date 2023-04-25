@@ -3,6 +3,8 @@ const router = express.Router();
 const { Users } = require("../models");
 const jwt = require("jsonwebtoken");
 const { tryCatch } = require("../utils/tryCatch");
+const bcrypt = require("bcryptjs");
+const salt = bcrypt.genSaltSync(12);
 
 router.post(
   "/signup",
@@ -38,8 +40,10 @@ router.post(
     if (isExistUser) {
       return res.status(412).json({ errorMessage: "중복된 닉네임입니다." });
     }
-
-    await Users.create({ nickname, password });
+    await Users.create({
+      nickname,
+      password: await bcrypt.hash(password, salt),
+    });
     return res.status(201).json({ message: "회원 가입에 성공하였습니다." });
   })
 );
@@ -50,13 +54,15 @@ router.post(
     const { nickname, password } = req.body;
     const user = await Users.findOne({ where: { nickname: nickname } });
 
-    if (!user || user.password !== password) {
+    if (!user || !bcrypt.compareSync(password, user.password)) {
       return res
         .status(412)
         .json({ errorMessage: "닉네임 또는 패스워드를 확인해주세요." });
     }
 
-    const token = jwt.sign({ nickname: user.nickname }, "awb231aswq211");
+    const token = jwt.sign({ nickname: user.nickname }, "awb231aswq211", {
+      expiresIn: "1h",
+    });
     res.cookie("Authorization", `Bearer ${token}`);
     res.status(200).json({ Authorization: `Bearer ${token}` });
   })

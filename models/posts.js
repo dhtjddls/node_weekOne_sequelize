@@ -14,12 +14,6 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "UserId",
       });
 
-      // define association here
-      this.belongsTo(models.Users, {
-        targetKey: "nickname",
-        foreignKey: "nickName",
-      });
-
       this.hasMany(models.Comment, {
         sourceKey: "postId",
         foreignKey: "PostId",
