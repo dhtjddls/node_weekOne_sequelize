@@ -16,7 +16,6 @@ class LikeService {
       postId,
       userId
     );
-    console.log(likeExistData);
     return likeExistData;
   };
 

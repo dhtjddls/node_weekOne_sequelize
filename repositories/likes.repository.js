@@ -20,7 +20,6 @@ class LikeRepository {
   };
 
   createLike = async (postId, userId) => {
-    console.log(userId, postId);
     const createLikeData = await Like.create({
       PostId: postId,
       UserId: Number(userId),
