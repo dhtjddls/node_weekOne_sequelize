@@ -24,7 +24,6 @@ class PostsController {
   createPost = tryCatch(async (req, res) => {
     const { title, content } = req.body;
     const { nickname, userId } = res.locals.user;
-
     if (Object.keys(req.body).length === 0) {
       return res
         .status(412)

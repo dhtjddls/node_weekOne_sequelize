@@ -1,8 +1,12 @@
 const jwt = require("jsonwebtoken");
+const fs = require("fs");
+const path = require("path");
 const { Users } = require("../models");
 
+const SECRET_KEY = "awb231aswq211";
+
 module.exports = async (req, res, next) => {
-  const { Authorization } = req.cookies;
+  const { Authorization, refresh } = req.cookies;
   const [authType, authToken] = (Authorization ?? "").split(" ");
 
   if (authType !== "Bearer" || !authToken) {
@@ -10,16 +14,69 @@ module.exports = async (req, res, next) => {
       errorMessage: "로그인이 필요한 기능입니다.",
     });
   }
+  if (!refresh) {
+    return res.status(403).json({
+      errorMessage: "로그인이 필요한 기능입니다.",
+    });
+  }
 
   try {
-    const { nickname } = jwt.verify(authToken, "awb231aswq211");
-    const user = await Users.findOne({ where: { nickname } });
-    res.locals.user = user;
+    const isAccessTokenValidate = validateAccessToken(authToken);
+    const isRefreshTokenValidate = validateRefreshToken(refresh);
+
+    if (!isRefreshTokenValidate)
+      return res.status(419).json({
+        message: "Refresh Token이 만료되었습니다. 다시 로그인 해주세요",
+      });
+
+    if (!isAccessTokenValidate) {
+      const filePath = path.join(process.cwd(), "utils", "refresh.json");
+      const fileData = JSON.parse(fs.readFileSync(filePath));
+      const accessTokenNickname = fileData[refresh];
+      if (!accessTokenNickname)
+        return res.status(419).json({
+          message:
+            "Refresh Token의 정보가 서버에 존재하지 않습니다. 다시 로그인 해주세요.",
+        });
+      const accessToken = jwt.sign(
+        { nickname: accessTokenNickname }, // JWT 데이터
+        SECRET_KEY, // 비밀키
+        { expiresIn: "2h" }
+      );
+      console.log("access 쿠키 재발급");
+      res.cookie("Authorization", `Bearer ${accessToken}`);
+      const { nickname } = jwt.verify(accessToken, SECRET_KEY);
+      const user = await Users.findOne({ where: { nickname } });
+      res.locals.user = user;
+    } else {
+      const { nickname } = jwt.verify(authToken, SECRET_KEY);
+      const user = await Users.findOne({ where: { nickname } });
+      res.locals.user = user;
+    }
     next();
   } catch (error) {
     console.error(error);
     return res
       .status(403)
       .json({ errorMessage: "전달된 쿠키에서 오류가 발생하였습니다." });
+  }
+
+  function validateAccessToken(accessToken) {
+    try {
+      jwt.verify(accessToken, SECRET_KEY); // JWT를 검증합니다.
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  // Refresh Token을 검증합니다.
+  function validateRefreshToken(refreshToken) {
+    try {
+      jwt.verify(refreshToken, SECRET_KEY); // JWT를 검증합니다.
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 };

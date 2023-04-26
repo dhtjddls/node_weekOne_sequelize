@@ -54,9 +54,14 @@ class AuthController {
         .json({ errorMessage: "닉네임 또는 패스워드를 확인해주세요." });
     }
     const loginData = await this.authService.login(nickname);
-
-    res.cookie("Authorization", `${loginData.type} ${loginData.token}`);
-    res.status(200).json(loginData);
+    res.cookie(
+      "Authorization",
+      `${loginData.accessObject.type} ${loginData.accessObject.token}`
+    );
+    res.cookie("refresh", loginData.refreshToken);
+    res.status(200).json({
+      Authorization: `${loginData.accessObject.type} ${loginData.accessObject.token}`,
+    });
   });
 }
 
