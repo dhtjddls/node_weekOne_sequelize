@@ -1,6 +1,8 @@
 const PostService = require("../services/posts.service");
 const LikeService = require("../services/likes.service");
 const { tryCatch } = require("../utils/tryCatch");
+const { sequelize } = require("../models");
+const { Transaction } = require("sequelize");
 
 class PostsController {
   postService = new PostService();
@@ -128,23 +130,28 @@ class PostsController {
         .json({ errorMessage: "게시글이 존재하지 않습니다." });
 
     const isLikeExist = await this.likeService.findLikeExist(postId, userId);
-    if (isLikeExist) {
-      const deleteLike = await this.likeService.deleteLike(postId, userId);
-      const postDecreaseLike = await this.postService.postDecreaseLike(
-        postId,
-        userId
-      );
+    await sequelize.transaction(
+      { isolateLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED },
+      async (t) => {
+        if (isLikeExist) {
+          const deleteLike = await this.likeService.deleteLike(postId, userId);
+          const postDecreaseLike = await this.postService.postDecreaseLike(
+            postId,
+            userId
+          );
 
-      res.status(200).json(deleteLike);
-    } else {
-      const createLike = await this.likeService.createLike(postId, userId);
-      const postIncreaseLike = await this.postService.postIncreaseLike(
-        postId,
-        userId
-      );
+          res.status(200).json(deleteLike);
+        } else {
+          const createLike = await this.likeService.createLike(postId, userId);
+          const postIncreaseLike = await this.postService.postIncreaseLike(
+            postId,
+            userId
+          );
 
-      res.status(200).json(createLike);
-    }
+          res.status(200).json(createLike);
+        }
+      }
+    );
   });
 }
 
