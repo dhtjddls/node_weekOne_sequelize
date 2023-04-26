@@ -21,15 +21,18 @@ module.exports = async (req, res, next) => {
   try {
     const isAccessTokenValidate = validateAccessToken(authToken);
     const isRefreshTokenValidate = validateRefreshToken(refresh);
+    const filePath = path.join(process.cwd(), "utils", "refresh.json");
+    const fileData = JSON.parse(fs.readFileSync(filePath));
 
-    if (!isRefreshTokenValidate)
+    if (!isRefreshTokenValidate) {
+      delete fileData[refresh];
+      fs.writeFileSync(filePath, JSON.stringify(fileData));
       return res.status(419).json({
         message: "Refresh Token이 만료되었습니다. 다시 로그인 해주세요",
       });
+    }
 
     if (!isAccessTokenValidate) {
-      const filePath = path.join(process.cwd(), "utils", "refresh.json");
-      const fileData = JSON.parse(fs.readFileSync(filePath));
       const accessTokenNickname = fileData[refresh];
       if (!accessTokenNickname)
         return res.status(419).json({
