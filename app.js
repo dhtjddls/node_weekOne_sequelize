@@ -6,6 +6,7 @@ const port = 3000;
 const swaggerUi = require("swagger-ui-express");
 const swaggerFile = require("./swagger-output");
 const errorHandler = require("./middlewares/errorHandler");
+require("dotenv").config();
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());

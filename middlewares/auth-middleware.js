@@ -3,8 +3,6 @@ const fs = require("fs");
 const path = require("path");
 const { Users } = require("../models");
 
-const SECRET_KEY = "awb231aswq211";
-
 module.exports = async (req, res, next) => {
   const { Authorization, refresh } = req.cookies;
   const [authType, authToken] = (Authorization ?? "").split(" ");
@@ -40,16 +38,16 @@ module.exports = async (req, res, next) => {
         });
       const accessToken = jwt.sign(
         { nickname: accessTokenNickname }, // JWT 데이터
-        SECRET_KEY, // 비밀키
+        process.env.SECRET_KEY, // 비밀키
         { expiresIn: "2h" }
       );
       console.log("access 쿠키 재발급");
       res.cookie("Authorization", `Bearer ${accessToken}`);
-      const { nickname } = jwt.verify(accessToken, SECRET_KEY);
+      const { nickname } = jwt.verify(accessToken, process.env.SECRET_KEY);
       const user = await Users.findOne({ where: { nickname } });
       res.locals.user = user;
     } else {
-      const { nickname } = jwt.verify(authToken, SECRET_KEY);
+      const { nickname } = jwt.verify(authToken, process.env.SECRET_KEY);
       const user = await Users.findOne({ where: { nickname } });
       res.locals.user = user;
     }
@@ -63,7 +61,7 @@ module.exports = async (req, res, next) => {
 
   function validateAccessToken(accessToken) {
     try {
-      jwt.verify(accessToken, SECRET_KEY); // JWT를 검증합니다.
+      jwt.verify(accessToken, process.env.SECRET_KEY); // JWT를 검증합니다.
       return true;
     } catch (error) {
       return false;
@@ -73,7 +71,7 @@ module.exports = async (req, res, next) => {
   // Refresh Token을 검증합니다.
   function validateRefreshToken(refreshToken) {
     try {
-      jwt.verify(refreshToken, SECRET_KEY); // JWT를 검증합니다.
+      jwt.verify(refreshToken, process.env.SECRET_KEY); // JWT를 검증합니다.
       return true;
     } catch (error) {
       return false;

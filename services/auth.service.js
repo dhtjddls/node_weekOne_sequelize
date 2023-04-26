@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const path = require("path");
 const fs = require("fs");
 const UserRepository = require("../repositories/user.repository");
-const SECRET_KEY = "awb231aswq211";
 class AuthService {
   userRepository = new UserRepository();
 
@@ -20,14 +19,20 @@ class AuthService {
   };
 
   login = async (nickname) => {
-    const accessToken = jwt.sign({ nickname: nickname }, SECRET_KEY, {
-      expiresIn: "2h",
-    });
+    const accessToken = jwt.sign(
+      { nickname: nickname },
+      process.env.SECRET_KEY,
+      {
+        expiresIn: "2h",
+      }
+    );
     const accessObject = { type: "Bearer", token: accessToken };
 
     const filePath = path.join(process.cwd(), "utils", "refresh.json");
     const fileData = JSON.parse(fs.readFileSync(filePath));
-    const refreshToken = jwt.sign({}, SECRET_KEY, { expiresIn: "7d" });
+    const refreshToken = jwt.sign({}, process.env.SECRET_KEY, {
+      expiresIn: "7d",
+    });
     fileData[refreshToken] = nickname;
     fs.writeFileSync(filePath, JSON.stringify(fileData));
 
