@@ -3,14 +3,16 @@ const jwt = require("jsonwebtoken");
 const path = require("path");
 const fs = require("fs");
 const UserRepository = require("../repositories/user.repository");
+const { User } = require("../models");
+
 class AuthService {
-  userRepository = new UserRepository();
+  userRepository = new UserRepository(User);
 
   signup = async (nickname, password, confirm) => {
     const salt = bcrypt.genSaltSync(12);
     password = await bcrypt.hash(password, salt);
 
-    const signupData = this.userRepository.createUser(
+    const signupData = await this.userRepository.createUser(
       nickname,
       password,
       confirm

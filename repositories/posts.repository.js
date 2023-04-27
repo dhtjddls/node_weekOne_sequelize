@@ -1,10 +1,12 @@
-const { Posts } = require("../models");
 const { Op } = require("sequelize");
 
 class PostRepository {
+  constructor(postsModel) {
+    this.Posts = postsModel;
+  }
   findAllPost = async () => {
     // ORM인 Sequelize에서 Posts 모델의 findAll 메소드를 사용해 데이터를 요청합니다.
-    const posts = await Posts.findAll({
+    const posts = await this.Posts.findAll({
       attributes: [
         "postId",
         "UserId",
@@ -20,8 +22,7 @@ class PostRepository {
   };
 
   findOnePost = async (postId) => {
-    console.log(postId);
-    const post = await Posts.findOne({
+    const post = await this.Posts.findOne({
       attributes: [
         "postId",
         "UserId",
@@ -39,8 +40,8 @@ class PostRepository {
 
   createPost = async (nickname, userId, title, content) => {
     // ORM인 Sequelize에서 Posts 모델의 create 메소드를 사용해 데이터를 요청합니다.
-    console.log(nickname, userId, title, content);
-    const createPostData = await Posts.create({
+
+    const createPostData = await this.Posts.create({
       UserId: userId,
       title,
       content,
@@ -51,7 +52,7 @@ class PostRepository {
   };
 
   putPost = async (title, content, postId, userId) => {
-    const putPostData = await Posts.update(
+    const putPostData = await this.Posts.update(
       { title, content },
       {
         where: {
@@ -64,7 +65,7 @@ class PostRepository {
   };
 
   deletePost = async (postId, userId) => {
-    const deletePost = await Posts.destroy({
+    const deletePost = await this.Posts.destroy({
       where: {
         [Op.and]: [{ postId: postId }, { UserId: userId }],
       },
@@ -73,7 +74,7 @@ class PostRepository {
   };
 
   findLikedPost = async (likedData) => {
-    const likedPostData = await Posts.findAll({
+    const likedPostData = await this.Posts.findAll({
       where: {
         postId: {
           [Op.in]: likedData,
@@ -84,7 +85,7 @@ class PostRepository {
   };
 
   postDecreaseLike = async (postId, userId) => {
-    const postDecrease = await Posts.findOne({
+    const postDecrease = await this.Posts.findOne({
       where: { postId: postId },
     });
     await postDecrease.decrement("likes", { by: 1 });
@@ -92,7 +93,7 @@ class PostRepository {
   };
 
   postIncreaseLike = async (postId, userId) => {
-    const postIncrease = await Posts.findOne({
+    const postIncrease = await this.Posts.findOne({
       where: { postId: postId },
     });
     await postIncrease.increment("likes", { by: 1 });

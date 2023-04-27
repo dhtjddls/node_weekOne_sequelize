@@ -1,7 +1,8 @@
 const LikeRepository = require("../repositories/likes.repository");
+const { Like } = require("../models");
 
 class LikeService {
-  likeRepository = new LikeRepository();
+  likeRepository = new LikeRepository(Like);
 
   findLiked = async (userId) => {
     const likedData = await this.likeRepository.findLiked(userId);

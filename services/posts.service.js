@@ -1,7 +1,8 @@
+const { Posts } = require("../models");
 const PostRepository = require("../repositories/posts.repository");
 
 class PostService {
-  postRepository = new PostRepository();
+  postRepository = new PostRepository(Posts);
 
   findAllPost = async () => {
     const allPost = await this.postRepository.findAllPost();

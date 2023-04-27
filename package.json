@@ -5,8 +5,12 @@
   "main": "app.js",
   "scripts": {
     "start": "nodemon app.js",
-    "test": "jest",
-    "prestart": "node ./utils/swagger.js"
+    "prestart": "node ./utils/swagger.js",
+    "test": "jest --forceExit",
+    "test:silent": "jest --silent --forceExit",
+    "test:coverage": "jest --coverage --forceExit",
+    "test:unit": "jest __tests__/unit --forceExit",
+    "test:integration": "jest __tests__/integration --forceExit"
   },
   "author": "",
   "license": "ISC",

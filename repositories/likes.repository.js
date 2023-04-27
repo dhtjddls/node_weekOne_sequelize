@@ -1,9 +1,11 @@
-const { Like } = require("../models");
 const { Op } = require("sequelize");
 
 class LikeRepository {
+  constructor(likeModel) {
+    this.Like = likeModel;
+  }
   findLiked = async (userId) => {
-    const likedData = await Like.findAll({
+    const likedData = await this.Like.findAll({
       where: { userId: userId },
       attributes: ["postId"],
     });
@@ -11,7 +13,7 @@ class LikeRepository {
   };
 
   findLikeExist = async (postId, userId) => {
-    const likeExistData = await Like.findOne({
+    const likeExistData = await this.Like.findOne({
       where: {
         [Op.and]: [{ postId: postId }, { UserId: userId }],
       },
@@ -20,7 +22,7 @@ class LikeRepository {
   };
 
   createLike = async (postId, userId) => {
-    const createLikeData = await Like.create({
+    const createLikeData = await this.Like.create({
       PostId: postId,
       UserId: Number(userId),
     });
@@ -28,7 +30,7 @@ class LikeRepository {
   };
 
   deleteLike = async (postId, userId) => {
-    const deleteLikeData = await Like.destroy({
+    const deleteLikeData = await this.Like.destroy({
       where: {
         [Op.and]: [{ PostId: postId }, { UserId: userId }],
       },
