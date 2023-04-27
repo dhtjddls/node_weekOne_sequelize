@@ -4,7 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js",
+    "test": "jest",
     "prestart": "node ./utils/swagger.js"
   },
   "author": "",
@@ -23,6 +24,8 @@
     "swagger-ui-express": "^4.6.2"
   },
   "devDependencies": {
-    "sequelize-cli": "^6.6.0"
+    "jest": "^29.5.0",
+    "sequelize-cli": "^6.6.0",
+    "supertest": "^6.3.3"
   }
 }
