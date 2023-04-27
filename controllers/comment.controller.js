@@ -1,27 +1,20 @@
 const { tryCatch } = require("../utils/tryCatch");
 const CommentService = require("../services/comments.service");
 const PostService = require("../services/posts.service");
-
+const { commentSchema } = require("../controllers/validator/commentValidator");
 class CommentController {
   commentService = new CommentService();
   postService = new PostService();
 
   createComment = tryCatch(async (req, res) => {
     const { postId } = req.params;
-    const { comment } = req.body;
+    const { comment } = await commentSchema
+      .validateAsync(req.body)
+      .catch((err) => {
+        return res.status(412).json({ errorMessage: err.message });
+      });
     const { nickname, userId } = res.locals.user;
 
-    if (comment === "" || comment === undefined) {
-      return res
-        .status(412)
-        .json({ errorMessage: "댓글 내용을 입력해주세요." });
-    }
-
-    if (Object.keys(req.body).length === 0) {
-      return res
-        .status(412)
-        .json({ message: "데이터 형식이 올바르지 않습니다." });
-    }
     const isExistPost = await this.postService.findOnePost(postId);
     if (!isExistPost) {
       return res
@@ -54,22 +47,13 @@ class CommentController {
 
   putComment = tryCatch(async (req, res) => {
     const { postId, commentId } = req.params;
-    const { comment } = req.body;
+    const { comment } = await commentSchema
+      .validateAsync(req.body)
+      .catch((err) => {
+        return res.status(412).json({ errorMessage: err.message });
+      });
     const { userId } = res.locals.user;
 
-    if (
-      Object.keys(req.body).length === 0 ||
-      Object.values(req.params).length === 0
-    ) {
-      return res
-        .status(412)
-        .json({ message: "데이터 형식이 올바르지 않습니다." });
-    }
-    if (comment === "" || comment === undefined) {
-      return res
-        .status(412)
-        .json({ errorMessage: "댓글 내용을 입력해주세요." });
-    }
     const isExistPost = await this.postService.findOnePost(postId);
 
     if (!isExistPost) {

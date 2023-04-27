@@ -2,35 +2,22 @@ const AuthService = require("../services/auth.service");
 const PostService = require("../services/posts.service");
 const bcrypt = require("bcryptjs");
 const { tryCatch } = require("../utils/tryCatch");
+const {
+  signupSchema,
+  loginSchema,
+} = require("../controllers/validator/authValidator");
 
 class AuthController {
   authService = new AuthService();
   postService = new PostService();
 
   signup = tryCatch(async (req, res) => {
-    const { nickname, password, confirm } = req.body;
-    const regexResult = /^[A-Za-z0-9]{3,}$/.test(nickname);
-    const passwordLength = 4;
-    if (!regexResult) {
-      return res
-        .status(412)
-        .json({ errorMessage: "닉네임의 형식이 일치하지 않습니다." });
-    }
-    if (password !== confirm) {
-      return res.status(412).json({
-        errorMessage: "패스워드가 일치하지 않습니다.",
+    const { nickname, password, confirm } = await signupSchema
+      .validateAsync(req.body)
+      .catch((err) => {
+        return res.status(412).json({ errorMessage: err.message });
       });
-    }
-    if (password.length < passwordLength) {
-      return res
-        .status(412)
-        .json({ errorMessage: "패스워드 형식이 일치하지 않습니다." });
-    }
-    if (password.includes(nickname)) {
-      return res
-        .status(412)
-        .json({ errorMessage: "패스워드에 닉네임이 포함되어 있습니다." });
-    }
+
     const isExistUser = await this.authService.findOneUser(nickname);
     if (isExistUser) {
       return res.status(412).json({ errorMessage: "중복된 닉네임입니다." });
@@ -45,7 +32,11 @@ class AuthController {
   });
 
   login = tryCatch(async (req, res) => {
-    const { nickname, password } = req.body;
+    const { nickname, password } = await loginSchema
+      .validateAsync(req.body)
+      .catch((err) => {
+        return res.status(412).json({ errorMessage: err.message });
+      });
     const user = await this.authService.findOneUser(nickname);
 
     if (!user || !bcrypt.compareSync(password, user.password)) {

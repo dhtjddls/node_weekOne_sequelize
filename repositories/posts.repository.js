@@ -20,6 +20,7 @@ class PostRepository {
   };
 
   findOnePost = async (postId) => {
+    console.log(postId);
     const post = await Posts.findOne({
       attributes: [
         "postId",

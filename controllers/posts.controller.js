@@ -3,7 +3,7 @@ const LikeService = require("../services/likes.service");
 const { tryCatch } = require("../utils/tryCatch");
 const { sequelize } = require("../models");
 const { Transaction } = require("sequelize");
-
+const { postSchema } = require("../controllers/validator/postValidator");
 class PostsController {
   postService = new PostService();
   likeService = new LikeService();
@@ -16,31 +16,18 @@ class PostsController {
 
   getPost = tryCatch(async (req, res) => {
     const { postId } = req.params;
-    console.log(postId);
     const post = await this.postService.findOnePost(postId);
 
     res.status(200).json({ post: post });
   });
 
   createPost = tryCatch(async (req, res) => {
-    const { title, content } = req.body;
+    const { title, content } = await postSchema
+      .validateAsync(req.body)
+      .catch((err) => {
+        return res.status(412).json({ message: err.message });
+      });
     const { nickname, userId } = res.locals.user;
-
-    if (Object.keys(req.body).length === 0) {
-      return res
-        .status(412)
-        .json({ message: "데이터 형식이 올바르지 않습니다." });
-    }
-    if (title === "" || title === undefined) {
-      return res
-        .status(412)
-        .json({ errorMessage: "게시글 제목의 형식이 일치하지 않습니다." });
-    }
-    if (content === "" || content === undefined) {
-      return res
-        .status(412)
-        .json({ errorMessage: "게시글 내용의 형식이 일치하지 않습니다." });
-    }
 
     // 서비스 계층에 구현된 createPost 로직을 실행합니다.
     const createPostData = await this.postService.createPost(
@@ -54,27 +41,13 @@ class PostsController {
 
   putPost = tryCatch(async (req, res) => {
     const { postId } = req.params;
-    const { title, content } = req.body;
+    const { title, content } = await postSchema
+      .validateAsync(req.body)
+      .catch((err) => {
+        return res.status(412).json({ message: err.message });
+      });
     const { userId } = res.locals.user;
 
-    if (
-      Object.keys(req.body).length === 0 ||
-      Object.values(req.params).length === 0
-    ) {
-      return res
-        .status(412)
-        .json({ message: "데이터 형식이 올바르지 않습니다." });
-    }
-    if (title === "" || title === undefined) {
-      return res
-        .status(412)
-        .json({ errorMessage: "게시글 제목의 형식이 일치하지 않습니다." });
-    }
-    if (content === "" || content === undefined) {
-      return res
-        .status(412)
-        .json({ errorMessage: "게시글 내용의 형식이 일치하지 않습니다." });
-    }
     const post = await this.postService.findOnePost(postId);
     if (post.userId !== userId) {
       return res
