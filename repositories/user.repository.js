@@ -16,7 +16,6 @@ class UserRepository {
     const findOneUserData = await this.User.findOne({
       where: { nickname: nickname },
     });
-
     return findOneUserData;
   };
 }

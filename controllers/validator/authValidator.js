@@ -10,19 +10,19 @@ module.exports = {
         "string.empty": "닉네임의 형식이 일치하지 않습니다.",
         "string.min": "닉네임의 형식이 일치하지 않습니다.",
       }),
-    paswword: Joi.string().min(4).required().messages({
+    password: Joi.string().min(4).required().messages({
       "string.base": "패스워드 형식이 일치하지 않습니다.",
       "string.empty": "패스워드 형식이 일치하지 않습니다.",
       "string.min": "패스워드 형식이 일치하지 않습니다.",
     }),
-    comfirm: Joi.string().valid(Joi.ref("password")).required().messages({
+    confirm: Joi.string().valid(Joi.ref("password")).required().messages({
       "string.base": "패스워드가 일치하지 않습니다.",
       "any.only": "패스워드가 일치하지 않습니다.",
       "string.empty": "패스워드가 일치하지 않습니다.",
     }),
   })
     .custom((value, helper) => {
-      if (value.paswword.toLowerCase().includes(value.nickname.toLowerCase())) {
+      if (value.password.toLowerCase().includes(value.nickname.toLowerCase())) {
         return helper.error("custom.passwordContainsNickname");
       }
       return value;

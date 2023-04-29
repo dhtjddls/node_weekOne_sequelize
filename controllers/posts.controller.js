@@ -36,7 +36,7 @@ class PostsController {
       title,
       content
     );
-    res.status(200).json(createPostData);
+    res.status(201).json(createPostData);
   });
 
   putPost = tryCatch(async (req, res) => {

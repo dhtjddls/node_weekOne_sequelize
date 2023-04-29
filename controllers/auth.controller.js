@@ -49,6 +49,7 @@ class AuthController {
       "Authorization",
       `${loginData.accessObject.type} ${loginData.accessObject.token}`
     );
+    res.locals.user = user.dataValues;
     res.cookie("refresh", loginData.refreshToken);
     res.status(200).json({
       Authorization: `${loginData.accessObject.type} ${loginData.accessObject.token}`,

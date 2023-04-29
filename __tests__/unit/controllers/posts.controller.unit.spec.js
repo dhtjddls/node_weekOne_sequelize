@@ -155,7 +155,7 @@ describe("Layered Architecture Pattern Posts Controller Unit Test", () => {
     );
 
     expect(mockResponse.status).toHaveBeenCalledTimes(1);
-    expect(mockResponse.status).toHaveBeenCalledWith(200);
+    expect(mockResponse.status).toHaveBeenCalledWith(201);
 
     expect(mockResponse.json).toHaveBeenCalledWith({
       message: "게시글 생성 성공",
