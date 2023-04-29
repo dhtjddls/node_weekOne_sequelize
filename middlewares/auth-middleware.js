@@ -2,7 +2,9 @@ const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const path = require("path");
 const { Users } = require("../models");
+const UserRepository = require("../repositories/user.repository");
 
+const userRepository = new UserRepository(Users);
 module.exports = async (req, res, next) => {
   const { Authorization, refresh } = req.cookies;
   const [authType, authToken] = (Authorization ?? "").split(" ");
@@ -47,11 +49,14 @@ module.exports = async (req, res, next) => {
       console.log("access 쿠키 재발급");
       res.cookie("Authorization", `Bearer ${accessToken}`);
       const { nickname } = jwt.verify(accessToken, process.env.SECRET_KEY);
-      const user = await Users.findOne({ where: { nickname } });
+      const user = await userRepository.findOneUser(nickname);
+      console.log(user);
       res.locals.user = user;
     } else {
       const { nickname } = jwt.verify(authToken, process.env.SECRET_KEY);
-      const user = await Users.findOne({ where: { nickname } });
+      const user = await userRepository.findOneUser(nickname);
+      console.log(user);
+
       res.locals.user = user;
     }
     next();
