@@ -56,7 +56,8 @@ class PostRepository {
       { title, content },
       {
         where: {
-          [Op.and]: [{ postId: postId }, { UserId: userId }],
+          postId: postId,
+          UserId: userId,
         },
       }
     );

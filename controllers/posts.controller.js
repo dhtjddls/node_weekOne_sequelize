@@ -55,13 +55,12 @@ class PostsController {
         .json({ errorMessage: "게시글 수정의 권한이 존재하지 않습니다." });
     }
 
-    const putPostData = await this.postService
-      .putPost(title, content, postId, userId)
-      .catch((err) => {
-        res
-          .status(401)
-          .json({ errorMessage: "게시글이 정상적으로 수정되지 않았습니다." });
-      });
+    const putPostData = await this.postService.putPost(
+      title,
+      content,
+      postId,
+      userId
+    );
 
     res.status(200).json(putPostData);
   });
@@ -69,7 +68,6 @@ class PostsController {
   deletePost = tryCatch(async (req, res) => {
     const { postId } = req.params;
     const { userId } = res.locals.user;
-    console.log(postId);
 
     const isExistPost = await this.postService.findOnePost(postId);
     if (!isExistPost)
@@ -81,13 +79,7 @@ class PostsController {
         .status(403)
         .json({ errorMessage: "게시글 수정의 권한이 존재하지 않습니다." });
     }
-    const deletePostData = await this.postService
-      .deletePost(postId, userId)
-      .catch((err) => {
-        res
-          .status(401)
-          .json({ errorMessage: "게시글이 정상적으로 삭제되지 않았습니다." });
-      });
+    const deletePostData = await this.postService.deletePost(postId, userId);
 
     res.status(200).json(deletePostData);
   });
