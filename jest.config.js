@@ -13,6 +13,7 @@ module.exports = {
         publicPath: "./html-report",
         filename: "report.html",
         openReport: true,
+        includeFailureMsg: true,
       },
     ],
   ],
