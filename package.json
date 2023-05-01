@@ -23,6 +23,7 @@
     "jsonwebtoken": "^9.0.0",
     "morgan": "^1.10.0",
     "mysql2": "^3.2.3",
+    "redis": "^4.6.6",
     "sequelize": "^6.31.0",
     "swagger-autogen": "^2.23.1",
     "swagger-ui-express": "^4.6.2"

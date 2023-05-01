@@ -1,10 +1,9 @@
 const jwt = require("jsonwebtoken");
-const fs = require("fs");
-const path = require("path");
 const { Users } = require("../models");
 const UserRepository = require("../repositories/user.repository");
-
+const RedisRepository = require("../repositories/redis.repository");
 const userRepository = new UserRepository(Users);
+const redisRepo = new RedisRepository();
 module.exports = async (req, res, next) => {
   const { Authorization, refresh } = req.cookies;
   const [authType, authToken] = (Authorization ?? "").split(" ");
@@ -23,19 +22,16 @@ module.exports = async (req, res, next) => {
   try {
     const isAccessTokenValidate = validateAccessToken(authToken);
     const isRefreshTokenValidate = validateRefreshToken(refresh);
-    const filePath = path.join(process.cwd(), "utils", "refresh.json");
-    const fileData = JSON.parse(fs.readFileSync(filePath));
 
     if (!isRefreshTokenValidate) {
-      delete fileData[refresh];
-      fs.writeFileSync(filePath, JSON.stringify(fileData));
+      redisRepo.deleteRefreshToken(refresh);
       return res.status(419).json({
         message: "Refresh Token이 만료되었습니다. 다시 로그인 해주세요",
       });
     }
 
     if (!isAccessTokenValidate) {
-      const accessTokenNickname = fileData[refresh];
+      const accessTokenNickname = redisRepo.getRefreshToken(refresh);
       if (!accessTokenNickname)
         return res.status(419).json({
           message:
@@ -50,12 +46,10 @@ module.exports = async (req, res, next) => {
       res.cookie("Authorization", `Bearer ${accessToken}`);
       const { nickname } = jwt.verify(accessToken, process.env.SECRET_KEY);
       const user = await userRepository.findOneUser(nickname);
-      console.log(user);
       res.locals.user = user;
     } else {
       const { nickname } = jwt.verify(authToken, process.env.SECRET_KEY);
       const user = await userRepository.findOneUser(nickname);
-      console.log(user);
 
       res.locals.user = user;
     }

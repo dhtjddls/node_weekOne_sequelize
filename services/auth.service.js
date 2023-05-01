@@ -1,13 +1,12 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const path = require("path");
-const fs = require("fs");
 const UserRepository = require("../repositories/user.repository");
+const RedisRepository = require("../repositories/redis.repository");
 const { Users } = require("../models");
 
 class AuthService {
   userRepository = new UserRepository(Users);
-
+  redisRepository = new RedisRepository();
   signup = async (nickname, password, confirm) => {
     const salt = bcrypt.genSaltSync(12);
     password = await bcrypt.hash(password, salt);
@@ -30,13 +29,10 @@ class AuthService {
     );
     const accessObject = { type: "Bearer", token: accessToken };
 
-    const filePath = path.join(process.cwd(), "utils", "refresh.json");
-    const fileData = JSON.parse(fs.readFileSync(filePath));
     const refreshToken = jwt.sign({}, process.env.SECRET_KEY, {
       expiresIn: "7d",
     });
-    fileData[refreshToken] = nickname;
-    fs.writeFileSync(filePath, JSON.stringify(fileData));
+    this.redisRepository.setRefreshToken(refreshToken, nickname);
 
     return { accessObject, refreshToken: refreshToken };
   };
