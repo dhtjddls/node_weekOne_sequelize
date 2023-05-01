@@ -14,12 +14,14 @@ class RedisClientRepository {
   initialize = async () => {
     this.redisClient.on("connect", () => {
       this.redisConnected = true;
-      console.log("Redis connected!");
+
+      console.info("Redis connected!");
     });
     this.redisClient.on("error", (err) => {
       console.error("Redis Client Error", err);
     });
-    if (!this.redisConnected == true) this.redisClient.connect().then(); // redis v4 연결 (비동기)
+
+    if (!this.redisConnected) this.redisClient.connect().then(); // redis v4 연결 (비동기)
   };
 
   setRefreshToken = async (refreshToken, userId) => {
